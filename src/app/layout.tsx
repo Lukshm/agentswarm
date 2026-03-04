@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Agent Swarm',
@@ -17,8 +18,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           borderBottom: '1px solid #2e2e3e',
           fontSize: '0.9rem',
         }}>
-          <a href="/" style={{ color: '#a5b4fc', textDecoration: 'none' }}>Home</a>
-          <a href="/usage" style={{ color: '#a5b4fc', textDecoration: 'none' }}>Usage</a>
+          <Link href="/" style={{ color: '#a5b4fc', textDecoration: 'none' }}>Home</Link>
+          <Link href="/usage" style={{ color: '#a5b4fc', textDecoration: 'none' }}>Usage</Link>
         </nav>
         {children}
       </body>
