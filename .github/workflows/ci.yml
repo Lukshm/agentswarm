@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    name: Lint, Types & Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Unit tests
+        run: npm run test
+
+  # Require screenshots for UI changes
+  screenshot-check:
+    name: Screenshot Requirement
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for UI changes without screenshots
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+            });
+
+            const uiFiles = files.filter(f =>
+              f.filename.match(/\.(tsx|jsx|css|scss)$/) &&
+              !f.filename.includes('.test.') &&
+              !f.filename.includes('.spec.')
+            );
+
+            if (uiFiles.length === 0) {
+              console.log('No UI changes detected. Skipping screenshot check.');
+              return;
+            }
+
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+            });
+
+            const body = pr.body || '';
+            const hasScreenshot = body.includes('![') || body.includes('<img') || body.toLowerCase().includes('screenshot');
+
+            if (!hasScreenshot) {
+              core.setFailed(
+                `This PR modifies UI files (${uiFiles.map(f => f.filename).join(', ')}) but does not include screenshots. ` +
+                `Add screenshots to the PR description to proceed.`
+              );
+            } else {
+              console.log('✅ Screenshots found in PR description.');
+            }
