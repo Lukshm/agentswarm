@@ -1,0 +1,74 @@
+Build a complete AI Usage Tracker for this Next.js 15 TypeScript project.
+
+## Goal
+Track every AI API call made by the agent swarm (Claude + Codex), store usage logs, and show a dashboard with daily/weekly cost and token consumption.
+
+## What to build
+
+### 1. `.clawdbot/usage-config.json`
+```json
+{
+  "weeklyBudgetUSD": 20,
+  "models": {
+    "claude-opus-4-5": { "inputCostPer1M": 15, "outputCostPer1M": 75 },
+    "claude-sonnet-4-6": { "inputCostPer1M": 3, "outputCostPer1M": 15 },
+    "o4-mini": { "inputCostPer1M": 1.10, "outputCostPer1M": 4.40 },
+    "o3": { "inputCostPer1M": 10, "outputCostPer1M": 40 }
+  }
+}
+```
+
+### 2. `.clawdbot/log-usage.mjs`
+CLI script that appends to `.clawdbot/usage-log.jsonl`:
+- Args: taskId, model, inputTokens, outputTokens, source (swarm|openclaw)
+- Each record: { timestamp, date, weekId, taskId, model, source, inputTokens, outputTokens, costUSD }
+- weekId format: "2026-W10"
+- Reads pricing from usage-config.json to calculate costUSD
+
+### 3. `src/app/api/usage/route.ts`
+GET endpoint that reads usage-log.jsonl and returns:
+- today: { inputTokens, outputTokens, costUSD, calls }
+- thisWeek: { inputTokens, outputTokens, costUSD, calls, budgetUSD, remainingUSD, percentUsed }
+- byDay: last 14 days [{ date, costUSD, inputTokens, outputTokens }]
+- byTask: aggregated per taskId [{ taskId, calls, inputTokens, outputTokens, costUSD }]
+- byModel: aggregated per model [{ model, calls, inputTokens, outputTokens, costUSD }]
+
+### 4. `src/app/usage/page.tsx` + `src/app/usage/page.module.css`
+Server component dashboard at /usage:
+
+Top row — 4 stat cards:
+- Today cost ($X.XX)
+- This week cost ($X.XX / $20.00)
+- Total tokens this week (formatted: 1.2M)
+- API calls today
+
+Weekly budget progress bar:
+- Green < 50%, yellow 50-80%, red > 80%
+
+Last 14 days bar chart:
+- Pure CSS bars (no chart libraries), proportional height, date labels
+
+Two tables:
+- By Model: model | calls | tokens | cost
+- By Task: taskId | agent | tokens | cost
+
+Design: clean, modern, dark theme. CSS Modules only. Responsive.
+
+### 5. Update `src/app/layout.tsx`
+Add nav with links to / and /usage
+
+### 6. Seed data
+Create `.clawdbot/usage-log.jsonl` with 8 realistic records spread across last 5 days (mix of claude-sonnet-4-6 and o4-mini calls from different tasks).
+
+## Requirements
+- TypeScript strict
+- No external UI libraries
+- Works with empty log (shows zeros)
+- API route: path = process.cwd() + '/.clawdbot/usage-log.jsonl'
+
+## After building
+Run this exact command:
+git add -A && git commit -m "feat: AI usage tracker dashboard with daily/weekly cost tracking"
+
+Then run:
+openclaw system event --text "Done: Usage tracker dashboard built at /usage" --mode now
