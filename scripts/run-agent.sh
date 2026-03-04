@@ -62,7 +62,7 @@ if [ "$EXIT_CODE" -eq 0 ]; then
   BRANCH=$(git rev-parse --abbrev-ref HEAD)
   git push origin "$BRANCH" 2>&1 || true
   
-  PR_URL=$(gh pr create --fill --base main 2>&1 || echo "")
+  PR_URL=$(gh pr create --fill --base master 2>&1 || echo "")
   PR_NUMBER=$(echo "$PR_URL" | grep -oP '(?<=/pull/)\d+' || echo "")
   
   if [ -n "$PR_NUMBER" ]; then

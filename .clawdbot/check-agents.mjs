@@ -125,7 +125,7 @@ async function main() {
           addNotification(
             'ready-for-review',
             task.id,
-            `🎉 PR #${task.pr} ready for review!\n\n${task.description.substring(0, 100)}\n\nhttps://github.com/owner/repo/pull/${task.pr}`,
+            `🎉 PR #${task.pr} ready for review!\n\n${task.description.substring(0, 100)}\n\nhttps://github.com/Lukshm/agentswarm/pull/${task.pr}`,
             { prNumber: task.pr }
           );
         }

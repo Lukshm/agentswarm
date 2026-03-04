@@ -25,7 +25,7 @@ echo "   Branch: $BRANCH"
 echo "   Worktree: $WORKTREE_PATH"
 
 # Create worktree on a new branch from origin/main
-git worktree add "$WORKTREE_PATH" -b "$BRANCH" origin/main
+git worktree add "$WORKTREE_PATH" -b "$BRANCH" origin/master
 cd "$WORKTREE_PATH"
 
 # Install deps
