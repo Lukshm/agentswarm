@@ -1,0 +1,9 @@
+{
+  "weeklyBudgetUSD": 20,
+  "models": {
+    "claude-opus-4-5": { "inputCostPer1M": 15, "outputCostPer1M": 75 },
+    "claude-sonnet-4-6": { "inputCostPer1M": 3, "outputCostPer1M": 15 },
+    "o4-mini": { "inputCostPer1M": 1.10, "outputCostPer1M": 4.40 },
+    "o3": { "inputCostPer1M": 10, "outputCostPer1M": 40 }
+  }
+}

@@ -1,0 +1,8 @@
+{"timestamp":"2026-02-28T13:17:00.000Z","date":"2026-02-28","weekId":"2026-W09","taskId":"task-001","model":"claude-sonnet-4-6","source":"swarm","inputTokens":12500,"outputTokens":3200,"costUSD":0.0855}
+{"timestamp":"2026-02-28T10:59:00.000Z","date":"2026-02-28","weekId":"2026-W09","taskId":"task-001","model":"o4-mini","source":"swarm","inputTokens":8000,"outputTokens":2100,"costUSD":0.01804}
+{"timestamp":"2026-03-01T15:04:00.000Z","date":"2026-03-01","weekId":"2026-W09","taskId":"task-002","model":"claude-sonnet-4-6","source":"openclaw","inputTokens":45000,"outputTokens":8500,"costUSD":0.2625}
+{"timestamp":"2026-03-01T09:13:00.000Z","date":"2026-03-01","weekId":"2026-W09","taskId":"task-003","model":"o4-mini","source":"swarm","inputTokens":6200,"outputTokens":1800,"costUSD":0.01474}
+{"timestamp":"2026-03-02T17:29:00.000Z","date":"2026-03-02","weekId":"2026-W10","taskId":"task-003","model":"claude-sonnet-4-6","source":"swarm","inputTokens":32000,"outputTokens":12000,"costUSD":0.276}
+{"timestamp":"2026-03-02T15:17:00.000Z","date":"2026-03-02","weekId":"2026-W10","taskId":"task-004","model":"o4-mini","source":"openclaw","inputTokens":15000,"outputTokens":4500,"costUSD":0.0363}
+{"timestamp":"2026-03-03T15:29:00.000Z","date":"2026-03-03","weekId":"2026-W10","taskId":"task-005","model":"claude-sonnet-4-6","source":"swarm","inputTokens":28000,"outputTokens":9200,"costUSD":0.222}
+{"timestamp":"2026-03-04T16:59:00.000Z","date":"2026-03-04","weekId":"2026-W10","taskId":"task-006","model":"claude-sonnet-4-6","source":"swarm","inputTokens":18000,"outputTokens":5400,"costUSD":0.135}
