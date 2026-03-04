@@ -1,114 +1,104 @@
-# Agent Swarm
+# Agent Swarm 🦴
 
-AI-powered development pipeline. Spawn coding agents, monitor CI, merge PRs — while you do other things.
-
-Orchestrated by **TenSoon** 🦴 (OpenClaw AI assistant).
+Automated AI-powered development pipeline. Spawn coding agents, monitor them, auto-review PRs, and get notified on Telegram when things are ready.
 
 ## Architecture
 
 ```
-You (Luke)
-    │
-    ▼
-TenSoon (OpenClaw) ──── Memory, context, business logic
-    │
-    ├── spawn-agent.sh ──► Claude Code agent (worktree 1)
-    ├── spawn-agent.sh ──► Codex agent      (worktree 2)
-    └── spawn-agent.sh ──► Claude Code agent (worktree 3)
-              │
-              ▼
-    GitHub PR + CI/CD
-    (lint → types → tests → AI reviews)
-              │
-              ▼
-    check-agents.sh (every 10 min)
-              │
-              ▼
-    Telegram: "PR #42 ready for review"
+TenSoon (OpenClaw)
+├── Spawns agents → git worktree + background process
+├── Monitors via cron every 10 min → check-agents.sh
+├── Triggers AI reviews on PRs → review-pr.sh
+└── Notifies via Telegram when PRs are ready
 ```
 
 ## Quick Start
 
 ```bash
-# Spawn a Claude Code agent
-bash scripts/spawn-agent.sh \
-  feat-auth \
-  feat/auth \
-  claude \
-  "Implement JWT authentication with refresh tokens. See src/types/auth.ts for types."
+# Spawn a Claude Code agent on a new feature branch
+npm run spawn feat-auth feat/auth claude "Implement JWT authentication with refresh tokens. Use src/lib/auth.ts. Write tests."
 
-# Check all running agents
-bash scripts/check-agents.sh
+# Spawn a Codex agent
+npm run spawn feat-payments feat/payments codex "Add Stripe payment integration..."
 
-# Trigger AI code review on a PR
-bash scripts/review-pr.sh 42
+# Check agent status manually
+npm run check-agents
 
-# Daily cleanup
-bash scripts/cleanup.sh
+# Review a PR with AI
+npm run review 42
+
+# Daily cleanup (also runs via cron)
+npm run cleanup
+```
+
+## File Structure
+
+```
+agentswarm/
+├── .clawdbot/
+│   ├── active-tasks.json      # Task registry (source of truth)
+│   ├── notifications.json     # Pending Telegram notifications
+│   └── agent-logs/            # Per-agent log files
+├── .github/workflows/
+│   └── ci.yml                 # Lint + types + tests + screenshot check
+├── scripts/
+│   ├── spawn-agent.sh         # Create worktree + launch agent
+│   ├── run-agent.sh           # Agent runner (called by spawn)
+│   ├── check-agents.sh        # Monitor loop (runs every 10 min)
+│   ├── review-pr.sh           # Trigger AI code reviews
+│   └── cleanup.sh             # Daily worktree + registry cleanup
+└── src/                       # Your Next.js app
 ```
 
 ## The 8-Step Workflow
 
-1. **Request** — You tell TenSoon what to build (or TenSoon finds work proactively)
-2. **Spawn** — TenSoon calls `spawn-agent.sh` with full context prompt
-3. **Monitor** — `check-agents.sh` runs every 10 min via OpenClaw cron
-4. **PR** — Agent commits, pushes, opens PR via `gh pr create`
-5. **Review** — `review-pr.sh` triggers Claude Code + Codex reviews on the PR
-6. **CI** — GitHub Actions: lint → typecheck → tests → screenshot check
-7. **Notify** — Telegram: "PR #X ready for review"
-8. **Merge** — You review in 5-10 min, merge. Done.
+1. **You describe a task** → TenSoon scopes it and spawns an agent
+2. **Agent gets its own worktree** → isolated branch, no conflicts
+3. **Cron monitors every 10 min** → checks PID, CI, PR status
+4. **Agent commits and opens PR** → via `gh pr create --fill`
+5. **AI reviews run automatically** → Claude + Codex post comments
+6. **CI runs** → lint, types, tests, screenshot check
+7. **You get Telegram notification** → "PR #42 ready for review"
+8. **You review and merge** → cron cleans up worktree + branch
 
-## Task Registry
-
-All active tasks live in `.clawdbot/active-tasks.json`:
+## Task Registry Schema
 
 ```json
-[{
+{
   "id": "feat-auth",
   "pid": 12345,
   "agent": "claude",
   "branch": "feat/auth",
-  "status": "ready-for-review",
-  "pr": 42,
+  "worktree": "../worktrees/feat-auth",
+  "description": "Implement JWT auth...",
+  "startedAt": 1740268800000,
+  "status": "running",
+  "attempts": 1,
+  "pr": null,
   "checks": {
-    "prCreated": true,
-    "ciPassed": true,
-    "claudeReviewPassed": true,
-    "codexReviewPassed": true
-  }
-}]
+    "prCreated": false,
+    "ciPassed": false,
+    "claudeReviewPassed": false,
+    "codexReviewPassed": false
+  },
+  "notifyOnComplete": true
+}
 ```
 
 **Status flow:** `running` → `pr-open` → `reviewing` → `ready-for-review` → `done`
 
-## Agent Selection Guide
+**Failure flow:** `failed` → auto-respawn (max 3) → `needs-human`
 
-| Task | Agent |
-|------|-------|
-| Backend logic, complex bugs, multi-file refactors | Codex |
-| Frontend, git operations, fast iterations | Claude Code |
-| New UI/dashboard design | Ask TenSoon (uses Claude) |
+## Monitoring
 
-## Scripts
+OpenClaw cron runs `check-agents.sh` every 10 minutes. Notifications land in `.clawdbot/notifications.json`. TenSoon reads them and sends Telegram messages.
 
-| Script | Description |
-|--------|-------------|
-| `scripts/spawn-agent.sh` | Create worktree + launch agent |
-| `scripts/run-agent.sh` | Agent runner (called by spawn) |
-| `scripts/check-agents.sh` | Monitor all tasks, update registry |
-| `scripts/review-pr.sh` | Trigger AI reviews on PR |
-| `scripts/cleanup.sh` | Remove merged worktrees, archive tasks |
-
-## Requirements
+## Prerequisites
 
 - Node.js 22+
 - Git
-- `gh` CLI (GitHub CLI) — authenticated
-- `claude` CLI — authenticated  
-- `codex` CLI — `OPENAI_API_KEY` set
-- OpenClaw (for orchestration + Telegram notifications)
-
-## OpenClaw Cron
-
-The monitoring loop runs via OpenClaw heartbeat every ~30 min.
-TenSoon checks `.clawdbot/notifications.json` and sends Telegram alerts.
+- `claude` CLI (`npm install -g @anthropic-ai/claude-code`)
+- `codex` CLI (`npm install -g @openai/codex`)
+- `gh` CLI ([cli.github.com](https://cli.github.com))
+- OpenAI API key (for Codex)
+- OpenClaw with Telegram configured
