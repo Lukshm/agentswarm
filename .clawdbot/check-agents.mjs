@@ -10,6 +10,14 @@ import path from 'path';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
+// Ensure gh and other tools are in PATH (Windows isolated sessions may not have full PATH)
+process.env.PATH = [
+  process.env.PATH,
+  'C:\\Program Files\\GitHub CLI',
+  'C:\\Users\\Luke\\AppData\\Local\\pnpm',
+  'C:\\Program Files\\nodejs',
+].filter(Boolean).join(';');
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
 const REGISTRY = path.join(REPO_ROOT, '.clawdbot', 'active-tasks.json');
